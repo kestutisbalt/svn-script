@@ -8,7 +8,7 @@ function list_unversioned_files {
 }
 
 function svn_clean {
-	list_unversioned_files | rm -r
+	list_unversioned_files | xargs rm -r
 }
 
 function main {
