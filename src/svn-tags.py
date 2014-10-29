@@ -16,9 +16,16 @@ import os
 import subprocess
 from colorama import Fore
 from exceptions import Exception
+from optparse import OptionParser
 
 
 def main():
+	opt_parser = OptionParser()
+	opt_parser.add_option("-l", "--last-tag", \
+		help = "Show only last tag name.", action = "store_true")
+
+	(options, args) = opt_parser.parse_args();
+
 	found, svn_base_dir = find_svn_base_dir()
 	if not found:
 		on_failed_to_find_svn_repo()
@@ -28,7 +35,10 @@ def main():
 
 	tags = sort_tags_desc(tags)
 
-	print_tags(tags)
+	if options.last_tag:
+		print tags[0]["name"]
+	else:
+		print_tags(tags)
 
 
 def print_tags(tags):
