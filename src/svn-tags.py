@@ -14,7 +14,6 @@
 
 import os
 import subprocess
-import re
 from colorama import Fore
 from exceptions import Exception
 
@@ -27,24 +26,46 @@ def main():
 	tags_dir = find_tags_dir(svn_base_dir)
 	tags = find_tags(tags_dir)
 
+	tags = sort_tags_desc(tags)
+
 	print_tags(tags)
 
 
 def print_tags(tags):
-	print "Tags:"
+	print "Tags (latest first):"
 	for t in tags:
-		print "\t" + t
+		print "\t" + t["name"]
+
+#
+# Sort tags in descending order by their revision number: newest first.
+#
+def sort_tags_desc(tags):
+	sorted_tags = tags[:]
+	sorted_tags.sort(key = lambda tag : tag["revision"], reverse = True)
+	return sorted_tags
 
 
 def find_tags(tags_dir):
 	output = subprocess.check_output(["svn", "list", tags_dir])
-	tags = output.split("\n")
-	tags.remove("")
+	lines = output.split("\n")
+	lines.remove("")
 
-	for i in range(0, len(tags)):
-		tags[i] = tags[i][:-1]
+	tags = []
+	for tag_name in lines:
+		tag_info = {}
+		tag_info["name"] = tag_name[:-1];
+		tag_info["revision"] = find_tag_revision(tags_dir, tag_name)
+		tags.append(tag_info)
 
 	return tags
+
+
+def find_tag_revision(tags_dir, tag_name):
+	tag_path = os.path.join(tags_dir, tag_name)
+	output = subprocess.check_output(["svn", "log", tag_path, "--limit=1"])
+	lines = output.split("\n")
+	revision_info = lines[1].split(" |")
+	return revision_info[0]
 
 
 def find_tags_dir(svn_base_dir):
