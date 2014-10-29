@@ -28,11 +28,8 @@ def main():
 
 	(options, args) = opt_parser.parse_args();
 
-	found, svn_base_dir = find_svn_base_dir()
-	if not found:
-		on_failed_to_find_svn_repo()
-
 	try:
+		svn_base_dir = find_svn_base_dir()
 		tags_dir = find_tags_dir(svn_base_dir)
 		tags = find_tags(tags_dir)
 
@@ -96,12 +93,6 @@ def find_tags_dir(svn_base_dir):
 	return os.path.join(svn_base_dir, tags_dir)
 
 
-def on_failed_to_find_svn_repo():
-	print COLOR_RED + "This directory is not part of svn repository." \
-		+ COLOR_RESET
-	exit(1)
-
-
 def find_svn_base_dir():
 	cur_dir = os.getcwd()
 	files = os.listdir(cur_dir)
@@ -111,7 +102,10 @@ def find_svn_base_dir():
 		cur_dir = os.getcwd()
 		files = os.listdir(cur_dir)
 
-	return has_svn_dir(files), cur_dir
+	if not has_svn_dir(files):
+		raise Exception("This directory is not part of svn repository.")
+
+	return cur_dir
 
 
 def keep_looking_for_svn_dir(files, cur_dir):
