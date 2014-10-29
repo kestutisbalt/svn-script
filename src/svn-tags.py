@@ -17,6 +17,8 @@ import subprocess
 from exceptions import Exception
 from optparse import OptionParser
 
+import svn_utils
+
 COLOR_RED = "\033[31m"
 COLOR_RESET = "\033[0m"
 
@@ -29,7 +31,7 @@ def main():
 	(options, args) = opt_parser.parse_args();
 
 	try:
-		svn_base_dir = find_svn_base_dir()
+		svn_base_dir = svn_utils.find_svn_base_dir()
 		tags_dir = find_tags_dir(svn_base_dir)
 		tags = find_tags(tags_dir)
 
@@ -91,33 +93,6 @@ def find_tags_dir(svn_base_dir):
 		raise Exception("SVN base dir does not have 'tags' dir.")
 
 	return os.path.join(svn_base_dir, tags_dir)
-
-
-def find_svn_base_dir():
-	cur_dir = os.getcwd()
-	files = os.listdir(cur_dir)
-
-	while keep_looking_for_svn_dir(files, cur_dir):
-		os.chdir("..")
-		cur_dir = os.getcwd()
-		files = os.listdir(cur_dir)
-
-	if not has_svn_dir(files):
-		raise Exception("This directory is not part of svn repository.")
-
-	return cur_dir
-
-
-def keep_looking_for_svn_dir(files, cur_dir):
-	return (not has_svn_dir(files)) and (not is_base_path(os.getcwd()))
-
-
-def has_svn_dir(files_dirs):
-	return ".svn" in files_dirs
-
-
-def is_base_path(path):
-	return path == "/"
 
 
 main()
