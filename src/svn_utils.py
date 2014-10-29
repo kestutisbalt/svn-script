@@ -6,10 +6,10 @@ import os
 from exceptions import Exception
 
 #
-# Returns svn repository base path.
+# Returns svn repository root path.
 # Throws exception if current directory is not within svn repository.
 #
-def find_svn_base_dir():
+def find_svn_root_path():
 	cur_dir = os.getcwd()
 	files = os.listdir(cur_dir)
 

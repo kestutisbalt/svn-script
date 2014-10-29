@@ -31,7 +31,7 @@ def main():
 	(options, args) = opt_parser.parse_args();
 
 	try:
-		svn_base_dir = svn_utils.find_svn_base_dir()
+		svn_base_dir = svn_utils.find_svn_root_path()
 		tags_dir = find_tags_dir(svn_base_dir)
 		tags = find_tags(tags_dir)
 
