@@ -14,9 +14,11 @@
 
 import os
 import subprocess
-from colorama import Fore
 from exceptions import Exception
 from optparse import OptionParser
+
+COLOR_RED = "\033[31m"
+COLOR_RESET = "\033[0m"
 
 
 def main():
@@ -30,15 +32,22 @@ def main():
 	if not found:
 		on_failed_to_find_svn_repo()
 
-	tags_dir = find_tags_dir(svn_base_dir)
-	tags = find_tags(tags_dir)
+	try:
+		tags_dir = find_tags_dir(svn_base_dir)
+		tags = find_tags(tags_dir)
 
-	tags = sort_tags_desc(tags)
+		tags = sort_tags_desc(tags)
 
-	if options.last_tag:
-		print tags[0]["name"]
-	else:
-		print_tags(tags)
+		if options.last_tag:
+			print tags[0]["name"]
+		else:
+			print_tags(tags)
+	except Exception, e:
+		print_error(str(e))
+
+
+def print_error(err_msg):
+	print COLOR_RED + err_msg + COLOR_RESET
 
 
 def print_tags(tags):
@@ -88,8 +97,8 @@ def find_tags_dir(svn_base_dir):
 
 
 def on_failed_to_find_svn_repo():
-	print Fore.RED + "This directory is not part of svn repository." \
-		+ Fore.RESET
+	print COLOR_RED + "This directory is not part of svn repository." \
+		+ COLOR_RESET
 	exit(1)
 
 
