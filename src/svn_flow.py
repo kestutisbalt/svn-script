@@ -47,22 +47,29 @@ def on_cmd_feature(svn_flow, args):
 	else:
 		cmd = args[0]
 
-	if cmd == "start":
-		# TODO: check if args[1] a.k.a feature name is specified.
-		svn_flow.feature_start(args[1])
+	try:
+		if cmd == "start":
+			if len(args) < 2:
+				raise Exception("Feature name must be specified.")
+			svn_flow.feature_start(args[1])
 
-	elif cmd == "finish":
-		svn_flow.feature_finish(args[1])
+		elif cmd == "finish":
+			if len(args) < 2:
+				raise Exception("Feature name must be specified.")
+			svn_flow.feature_finish(args[1])
 
-	elif cmd == "list":
-		pass
-		# TODO
+		elif cmd == "list":
+			pass
+			# TODO
 
-	elif cmd == "help":
-		on_cmd_feature_help()
+		elif cmd == "help":
+			on_cmd_feature_help()
 
-	else:
-		console_utils.print_error("Unknown command: " + cmd)
+		else:
+			raise Exception("Unknown command: " + cmd)
+
+	except Exception, e:
+		console_utils.print_error(str(e))
 		on_cmd_feature_help()
 
 
