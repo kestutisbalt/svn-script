@@ -9,7 +9,12 @@ import svn_utils
 import console_utils
 
 
+#
+# Returns exit code.
+#
 def main():
+	retval = 0
+
 	if len(sys.argv) > 1:
 		svn_flow = SvnFlow()
 
@@ -18,14 +23,17 @@ def main():
 			svn_flow.init()
 
 		elif cmd == "test":
-			svn_flow.test()
+			retval = svn_flow.test()
 
 		else:
+			retval = 1
 			console_utils.print_error("Unknown command: " + cmd)
 	else:
 		print "Usage:"
 		print ("\tsvn-flow init - initializes svn repository to work "
 			"with svn-flow.")
+
+	return retval
 
 
 def log(msg):
@@ -120,24 +128,36 @@ class SvnFlow:
 		self.svn.update_all()
 
 
+	#
+	# Returns 0 if no errors were encountered. Otherwise 1 is returned.
+	#
 	def test(self):
-		self.__test_dir("trunk")
-		self.__test_dir("tags")
+		retval = 0
+
+		retval = retval or self.__test_dir("trunk")
+		retval = retval or self.__test_dir("tags")
 
 		branches_dir = "branches"
-		self.__test_dir(branches_dir)
+		retval = retval or self.__test_dir(branches_dir)
 
-		self.__test_branches_subdir(branches_dir, "feature")
-		self.__test_branches_subdir(branches_dir, "release")
-		self.__test_branches_subdir(branches_dir, "hotfix")
+		retval = self.__test_branches_subdir(branches_dir, "feature") \
+			or retval
+		retval = self.__test_branches_subdir(branches_dir, "release") \
+			or retval
+		retval = self.__test_branches_subdir(branches_dir, "hotfix") \
+			or retval
+
+		return retval
 
 
 	def __test_branches_subdir(self, branches_dir, subdir):
 		branches_subdir = os.path.join(branches_dir, subdir)
-		self.__test_dir(branches_subdir)
+		return self.__test_dir(branches_subdir)
 
 
 	def __test_dir(self, dir_path):
+		retval = 0
+
 		try:
 			self.__raise_if_dir_invalid(dir_path)
 			self.__raise_if_not_exists(dir_path)
@@ -146,6 +166,9 @@ class SvnFlow:
 		except Exception, e:
 			log(dir_path +" [" + console_utils.text_red("FAIL") +"]")
 			console_utils.print_error(str(e))
+			retval = 1
+
+		return retval
 
 
 	def __create_dir(self, dir_path):
@@ -193,4 +216,4 @@ class SvnFlow:
 			raise Exception("'" + full_path + "' does not exist.")
 
 
-main()
+exit(main())
