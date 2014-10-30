@@ -79,6 +79,7 @@ def on_cmd_feature_help():
 	print ("\tsvn-flow feature finish <name> - merges branches/feature<name> "
 		"back to develop.")
 	print "\tsvn-flow feature list - lists all feature branches."
+	print "\tsvn-flow feature help - prints this help message."
 
 
 def log(msg):
