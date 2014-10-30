@@ -136,7 +136,7 @@ class SvnFlow:
 		full_path = os.path.join(self.svn.root_path, dir_path)
 		if not os.path.exists(full_path):
 			self.svn.branch("trunk", dir_path)
-			self.__commit_and_log(svn, "Created 'develop' branch.")
+			self.__commit_and_log("Created 'develop' branch.")
 		else:
 			log("Branch 'develop' exists. Skipping")
 
