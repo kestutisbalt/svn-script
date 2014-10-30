@@ -81,3 +81,7 @@ class Svn:
 
 		args.append(self.full_path(src_dir))
 		subprocess.call(args)
+
+
+	def remove(self, path):
+		subprocess.call(["svn", "remove", self.full_path(path)])
