@@ -17,6 +17,9 @@ def main():
 		if cmd == "init":
 			svn_flow.init()
 
+		elif cmd == "test":
+			svn_flow.test()
+
 		else:
 			console_utils.print_error("Unknown command: " + cmd)
 	else:
@@ -117,6 +120,34 @@ class SvnFlow:
 		self.svn.update_all()
 
 
+	def test(self):
+		self.__test_dir("trunk")
+		self.__test_dir("tags")
+
+		branches_dir = "branches"
+		self.__test_dir(branches_dir)
+
+		self.__test_branches_subdir(branches_dir, "feature")
+		self.__test_branches_subdir(branches_dir, "release")
+		self.__test_branches_subdir(branches_dir, "hotfix")
+
+
+	def __test_branches_subdir(self, branches_dir, subdir):
+		branches_subdir = os.path.join(branches_dir, subdir)
+		self.__test_dir(branches_subdir)
+
+
+	def __test_dir(self, dir_path):
+		try:
+			self.__raise_if_dir_invalid(dir_path)
+			self.__raise_if_not_exists(dir_path)
+
+			log(dir_path + " [" + console_utils.text_green("OK") +"]")
+		except Exception, e:
+			log(dir_path +" [" + console_utils.text_red("FAIL") +"]")
+			console_utils.print_error(str(e))
+
+
 	def __create_dir(self, dir_path):
 		self.__raise_if_dir_invalid(dir_path)
 
@@ -154,6 +185,12 @@ class SvnFlow:
 
 		if self.svn.is_tracked(dir_path) and not os.path.isdir(full_path):
 			raise Exception("'" + dir_path + "' is not a directory.")
+
+
+	def __raise_if_not_exists(self, path):
+		full_path = os.path.join(self.svn.root_path, path)
+		if not os.path.exists(full_path):
+			raise Exception("'" + full_path + "' does not exist.")
 
 
 main()
