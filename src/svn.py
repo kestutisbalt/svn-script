@@ -15,7 +15,7 @@ class Svn:
 	#	svn.mkdir("trunk")
 	#
 	def mkdir(self, relative_dir_path):
-		full_path = os.path.join(self.root_path, relative_dir_path)
+		full_path = self.full_path(relative_dir_path)
 		subprocess.call(["svn", "mkdir", full_path])
 
 	def commit(self, msg):
@@ -27,9 +27,8 @@ class Svn:
 	#	svn.branch("trunk", "branches/develop")
 	#
 	def branch(self, src_dir, target_dir):
-		src_dir = os.path.join(self.root_path, src_dir)
-		target_dir = os.path.join(self.root_path, target_dir)
-		subprocess.call(["svn", "copy", src_dir, target_dir])
+		subprocess.call(["svn", "copy", self.full_path(src_dir), \
+			self.full_path(target_dir)])
 
 	#
 	# Calls svn update on repository root path: recursively updates
@@ -45,9 +44,8 @@ class Svn:
 	# path.
 	#
 	def list(self, dir = ""):
-		full_path = os.path.join(self.root_path, dir)
-
-		output = subprocess.check_output(["svn", "list", full_path])
+		output = subprocess.check_output(["svn", "list", \
+			self.full_path(dir)])
 		lines = output.split("\n")
 		lines.remove("")
 
@@ -57,11 +55,10 @@ class Svn:
 	# Returns True if the specified path is tracked by svn. False otherwise.
 	#
 	def is_tracked(self, file_path):
-		full_path = os.path.join(self.root_path, file_path)
-
 		fnull = open(os.devnull, "w")
-		svn_retval = subprocess.call(["svn", "info", full_path], \
-			stdout = fnull, stderr = fnull)
+		svn_retval = subprocess.call(["svn", "info", \
+			self.full_path(file_path)], stdout = fnull, \
+			stderr = fnull)
 		return not bool(svn_retval)
 
 	#
