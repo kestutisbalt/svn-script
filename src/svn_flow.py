@@ -166,7 +166,7 @@ class SvnFlow:
 		if len(features) < 1:
 			print "No feature branches are present."
 		else:
-			print "Features branches:"
+			print "Feature branches:"
 			for f in features:
 				print "\t" + f[:-1]
 
@@ -217,6 +217,7 @@ class SvnFlow:
 
 
 	def __commit_and_log(self, msg):
+		os.chdir(self.svn.root_path)
 		self.svn.commit(msg)
 		log(msg)
 
