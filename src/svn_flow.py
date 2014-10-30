@@ -72,12 +72,11 @@ class Svn:
 
 def main():
 	if len(sys.argv) > 1:
-		svn_root_path = svn_utils.find_svn_root_path()
-		svn = Svn(svn_root_path)
+		svn_flow = SvnFlow()
 
 		cmd = sys.argv[1]
 		if cmd == "init":
-			svn_flow_init(svn_root_path)
+			svn_flow.init()
 
 		else:
 			console_utils.print_error("Unknown command: " + cmd)
@@ -87,70 +86,74 @@ def main():
 			"with svn-flow.")
 
 
-def svn_flow_init(svn_root_path):
-	svn = Svn(svn_root_path)
-
-	create_dir(svn, "trunk")
-
-	branches_dir = "branches"
-	create_dir(svn, branches_dir)
-
-	create_dir(svn, "tags")
-
-	create_develop_branch(svn, branches_dir)
-
-	features_dir = os.path.join(branches_dir, "feature")
-	create_dir(svn, features_dir)
-
-	releases_dir = os.path.join(branches_dir, "release")
-	create_dir(svn, releases_dir)
-
-	hotfix_dir = os.path.join(branches_dir, "hotfix")
-	create_dir(svn, hotfix_dir)
-
-	svn.update_all()
-
-
-def create_dir(svn, dir_path):
-	raise_if_dir_invalid(svn, dir_path)
-
-	full_path = os.path.join(svn.root_path, dir_path)
-	if not os.path.exists(full_path):
-		svn.mkdir(dir_path)
-		commit_and_log(svn, "Created directory '" + dir_path + "'.")
-	else:
-		log("Directory '" + dir_path + "' exists. Skipping.")
-
-
-def create_develop_branch(svn, branches_dir):
-	dir_path = os.path.join(branches_dir, "develop")
-	raise_if_dir_invalid(svn, dir_path)
-
-	full_path = os.path.join(svn.root_path, dir_path)
-	if not os.path.exists(full_path):
-		svn.branch("trunk", dir_path)
-		commit_and_log(svn, "Created 'develop' branch.")
-	else:
-		log("Branch 'develop' exists. Skipping")
-
-
-def commit_and_log(svn, msg):
-	svn.commit(msg)
-	log(msg)
-
-
 def log(msg):
 	print msg
 
 
-def raise_if_dir_invalid(svn, dir_path):
-	full_path = os.path.join(svn.root_path, dir_path)
+class SvnFlow:
+	def __init__(self):
+		self.svn = Svn(svn_utils.find_svn_root_path())
 
-	if os.path.exists(full_path) and not svn.is_tracked(dir_path):
-		raise Exception("'" + dir_path + "' is not tracked by SVN.")
 
-	if svn.is_tracked(dir_path) and not os.path.isdir(dir_path):
-		raise Exception("'" + dir_path + "' is not a directory.")
+	def init(self):
+		self.__create_dir("trunk")
+
+		branches_dir = "branches"
+		self.__create_dir(branches_dir)
+
+		self.__create_dir("tags")
+
+		self.__create_develop_branch(branches_dir)
+
+		features_dir = os.path.join(branches_dir, "feature")
+		self.__create_dir(features_dir)
+
+		releases_dir = os.path.join(branches_dir, "release")
+		self.__create_dir(releases_dir)
+
+		hotfix_dir = os.path.join(branches_dir, "hotfix")
+		self.__create_dir(hotfix_dir)
+
+		self.svn.update_all()
+
+
+	def __create_dir(self, dir_path):
+		self.__raise_if_dir_invalid(dir_path)
+
+		full_path = os.path.join(self.svn.root_path, dir_path)
+		if not os.path.exists(full_path):
+			self.svn.mkdir(dir_path)
+			self.__commit_and_log("Created directory '" \
+				+ dir_path + "'.")
+		else:
+			log("Directory '" + dir_path + "' exists. Skipping.")
+
+
+	def __create_develop_branch(self, branches_dir):
+		dir_path = os.path.join(branches_dir, "develop")
+		self.__raise_if_dir_invalid(dir_path)
+
+		full_path = os.path.join(self.svn.root_path, dir_path)
+		if not os.path.exists(full_path):
+			self.svn.branch("trunk", dir_path)
+			self.__commit_and_log(svn, "Created 'develop' branch.")
+		else:
+			log("Branch 'develop' exists. Skipping")
+
+
+	def __commit_and_log(self, msg):
+		self.svn.commit(msg)
+		log(msg)
+
+
+	def __raise_if_dir_invalid(self, dir_path):
+		full_path = os.path.join(self.svn.root_path, dir_path)
+
+		if os.path.exists(full_path) and not self.svn.is_tracked(dir_path):
+			raise Exception("'" + dir_path + "' is not tracked by SVN.")
+
+		if self.svn.is_tracked(dir_path) and not os.path.isdir(full_path):
+			raise Exception("'" + dir_path + "' is not a directory.")
 
 
 main()
