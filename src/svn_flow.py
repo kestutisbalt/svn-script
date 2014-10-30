@@ -59,8 +59,7 @@ def on_cmd_feature(svn_flow, args):
 			svn_flow.feature_finish(args[1])
 
 		elif cmd == "list":
-			pass
-			# TODO
+			svn_flow.feature_list()
 
 		elif cmd == "help":
 			on_cmd_feature_help()
@@ -160,6 +159,16 @@ class SvnFlow:
 		self.svn.remove(feature_branch)
 		self.__commit_and_log("Removed feature '" + name + "' branch.")
 		self.svn.update_all()
+
+
+	def feature_list(self):
+		features = self.svn.list(self.features_dir)
+		if len(features) < 1:
+			print "No feature branches are present."
+		else:
+			print "Features branches:"
+			for f in features:
+				print "\t" + f[:-1]
 
 
 	def __test_branches_subdir(self, branches_dir, subdir):
