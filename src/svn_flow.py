@@ -87,29 +87,26 @@ def log(msg):
 class SvnFlow:
 	def __init__(self):
 		self.svn = Svn(svn_utils.find_svn_root_path())
+
+		self.trunk_dir = "trunk"
+		self.tags_dir = "tags"
 		self.branches_dir = "branches"
 		self.develop_branch = os.path.join(self.branches_dir, "develop")
-		self.features_dir = os.path.join(self.branches_dir, "feature")
+		self.feature_dir = os.path.join(self.branches_dir, "feature")
+		self.release_dir = os.path.join(self.branches_dir, "release")
+		self.hotfix_dir = os.path.join(self.branches_dir, "hotfix")
 
 
 	def init(self):
-		self.__create_dir("trunk")
+		self.__create_dir(self.trunk_dir)
+		self.__create_dir(self.branches_dir)
+		self.__create_dir(self.tags_dir)
 
-		branches_dir = "branches"
-		self.__create_dir(branches_dir)
+		self.__create_develop_branch()
 
-		self.__create_dir("tags")
-
-		self.__create_develop_branch(branches_dir)
-
-		features_dir = os.path.join(branches_dir, "feature")
-		self.__create_dir(features_dir)
-
-		releases_dir = os.path.join(branches_dir, "release")
-		self.__create_dir(releases_dir)
-
-		hotfix_dir = os.path.join(branches_dir, "hotfix")
-		self.__create_dir(hotfix_dir)
+		self.__create_dir(self.feature_dir)
+		self.__create_dir(self.release_dir)
+		self.__create_dir(self.hotfix_dir)
 
 		self.svn.update_all()
 
@@ -120,24 +117,20 @@ class SvnFlow:
 	def test(self):
 		retval = 0
 
-		retval = retval or self.__test_dir("trunk")
-		retval = retval or self.__test_dir("tags")
+		retval = self.__test_dir("trunk") or retval
+		retval = self.__test_dir("tags") or retval
 
-		branches_dir = "branches"
-		retval = retval or self.__test_dir(branches_dir)
+		retval = self.__test_dir(self.branches_dir) or retval
 
-		retval = self.__test_branches_subdir(branches_dir, "feature") \
-			or retval
-		retval = self.__test_branches_subdir(branches_dir, "release") \
-			or retval
-		retval = self.__test_branches_subdir(branches_dir, "hotfix") \
-			or retval
+		retval = self.__test_dir(self.feature_dir) or retval
+		retval = self.__test_dir(self.release_dir) or retval
+		retval = self.__test_dir(self.hotfix_dir) or retval
 
 		return retval
 
 
 	def feature_start(self, name):
-		feature_branch = os.path.join(self.features_dir, name)
+		feature_branch = os.path.join(self.feature_dir, name)
 		if os.path.exists(self.svn.full_path(feature_branch)):
 			raise Exception("Feature branch '" + feature_branch \
 				+ "' already exists.")
@@ -149,7 +142,7 @@ class SvnFlow:
 
 
 	def feature_finish(self, name):
-		feature_branch = os.path.join(self.features_dir, name)
+		feature_branch = os.path.join(self.feature_dir, name)
 		self.__raise_if_dir_invalid(feature_branch)
 
 		self.svn.update_all()
@@ -162,18 +155,13 @@ class SvnFlow:
 
 
 	def feature_list(self):
-		features = self.svn.list(self.features_dir)
+		features = self.svn.list(self.feature_dir)
 		if len(features) < 1:
 			print "No feature branches are present."
 		else:
 			print "Feature branches:"
 			for f in features:
 				print "\t" + f[:-1]
-
-
-	def __test_branches_subdir(self, branches_dir, subdir):
-		branches_subdir = os.path.join(branches_dir, subdir)
-		return self.__test_dir(branches_subdir)
 
 
 	def __test_dir(self, dir_path):
@@ -183,9 +171,11 @@ class SvnFlow:
 			self.__raise_if_dir_invalid(dir_path)
 			self.__raise_if_not_exists(dir_path)
 
-			log(dir_path + " [" + console_utils.text_green("OK") +"]")
+			log(dir_path + " [" + console_utils.text_green("OK") \
+				+ "]")
 		except Exception, e:
-			log(dir_path +" [" + console_utils.text_red("FAIL") +"]")
+			log(dir_path + " [" + console_utils.text_red("FAIL") \
+				+ "]")
 			console_utils.print_error(str(e))
 			retval = 1
 
@@ -195,7 +185,7 @@ class SvnFlow:
 	def __create_dir(self, dir_path):
 		self.__raise_if_dir_invalid(dir_path)
 
-		full_path = os.path.join(self.svn.root_path, dir_path)
+		full_path = self.svn.full_path(dir_path)
 		if not os.path.exists(full_path):
 			self.svn.mkdir(dir_path)
 			self.__commit_and_log("Created directory '" \
@@ -204,13 +194,12 @@ class SvnFlow:
 			log("Directory '" + dir_path + "' exists. Skipping.")
 
 
-	def __create_develop_branch(self, branches_dir):
-		dir_path = os.path.join(branches_dir, "develop")
-		self.__raise_if_dir_invalid(dir_path)
+	def __create_develop_branch(self):
+		self.__raise_if_dir_invalid(self.develop_branch)
 
-		full_path = os.path.join(self.svn.root_path, dir_path)
+		full_path = self.svn.full_path(self.develop_branch)
 		if not os.path.exists(full_path):
-			self.svn.branch("trunk", dir_path)
+			self.svn.branch(self.trunk_dir, self.develop_branch)
 			self.__commit_and_log("Created 'develop' branch.")
 		else:
 			log("Branch 'develop' exists. Skipping")
@@ -223,7 +212,7 @@ class SvnFlow:
 
 
 	def __raise_if_dir_invalid(self, dir_path):
-		full_path = os.path.join(self.svn.root_path, dir_path)
+		full_path = self.svn.full_path(dir_path)
 
 		if os.path.exists(full_path) and not self.svn.is_tracked(dir_path):
 			raise Exception("'" + dir_path + "' is not tracked by SVN.")
@@ -233,7 +222,7 @@ class SvnFlow:
 
 
 	def __raise_if_not_exists(self, path):
-		full_path = os.path.join(self.svn.root_path, path)
+		full_path = self.svn.full_path(path)
 		if not os.path.exists(full_path):
 			raise Exception("'" + full_path + "' does not exist.")
 
