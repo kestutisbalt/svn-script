@@ -9,6 +9,26 @@ import svn_utils
 import console_utils
 
 
+def main():
+	if len(sys.argv) > 1:
+		svn_flow = SvnFlow()
+
+		cmd = sys.argv[1]
+		if cmd == "init":
+			svn_flow.init()
+
+		else:
+			console_utils.print_error("Unknown command: " + cmd)
+	else:
+		print "Usage:"
+		print ("\tsvn-flow init - initializes svn repository to work "
+			"with svn-flow.")
+
+
+def log(msg):
+	print msg
+
+
 class Svn:
 	def __init__(self, svn_root_path):
 		self.root_path = svn_root_path
@@ -68,26 +88,6 @@ class Svn:
 		svn_retval = subprocess.call(["svn", "info", full_path], \
 			stdout = fnull, stderr = fnull)
 		return not bool(svn_retval)
-
-
-def main():
-	if len(sys.argv) > 1:
-		svn_flow = SvnFlow()
-
-		cmd = sys.argv[1]
-		if cmd == "init":
-			svn_flow.init()
-
-		else:
-			console_utils.print_error("Unknown command: " + cmd)
-	else:
-		print "Usage:"
-		print ("\tsvn-flow init - initializes svn repository to work "
-			"with svn-flow.")
-
-
-def log(msg):
-	print msg
 
 
 class SvnFlow:
