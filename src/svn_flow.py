@@ -149,6 +149,9 @@ class SvnFlow:
 		self.svn.update_all()
 		self.svn.merge(feature_branch, self.develop_branch)
 		self.__commit_and_log("Merged feature '" + name + "' to develop.")
+
+		self.svn.remove(feature_branch)
+		self.__commit_and_log("Removed feature '" + name + "' branch.")
 		self.svn.update_all()
 
 
