@@ -15,15 +15,21 @@ import console_utils
 def main():
 	retval = 0
 
-	if len(sys.argv) > 1:
+	opt_parser = OptionParser()
+	(options, args) = opt_parser.parse_args();
+
+	if len(args) > 0:
 		svn_flow = SvnFlow()
 
-		cmd = sys.argv[1]
+		cmd = args[0]
 		if cmd == "init":
 			svn_flow.init()
 
 		elif cmd == "test":
 			retval = svn_flow.test()
+
+		elif cmd == "feature":
+			on_cmd_feature(svn_flow, args[1:])
 
 		else:
 			retval = 1
@@ -34,6 +40,39 @@ def main():
 			"with svn-flow.")
 
 	return retval
+
+
+def on_cmd_feature(svn_flow, args):
+	if len(args) < 1:
+		cmd = "help"
+	else:
+		cmd = args[0]
+
+	if cmd == "start":
+		# TODO: check if args[1] a.k.a feature name is specified.
+		svn_flow.feature_start(args[1])
+
+	elif cmd == "finish":
+		svn_flow.feature_finish(args[1])
+
+	elif cmd == "list":
+		pass
+		# TODO
+
+	elif cmd == "help":
+		on_cmd_feature_help()
+
+	else:
+		console_utils.print_error("Unknown command: " + cmd)
+		on_cmd_feature_help()
+
+
+def on_cmd_feature_help():
+	print "Usage:"
+	print ("\tsvn-flow feature start <name> - creates new branch off "
+		"develop named branches/feature/<name>.")
+	print ("\tsvn-flow feature finish <name> - merges branches/feature<name> "
+		"back to develop.")
 
 
 def log(msg):
@@ -64,7 +103,6 @@ class Svn:
 	def branch(self, src_dir, target_dir):
 		src_dir = os.path.join(self.root_path, src_dir)
 		target_dir = os.path.join(self.root_path, target_dir)
-		print "svn branch " + src_dir + " " + target_dir
 		subprocess.call(["svn", "copy", src_dir, target_dir])
 
 	#
@@ -100,10 +138,31 @@ class Svn:
 			stdout = fnull, stderr = fnull)
 		return not bool(svn_retval)
 
+	#
+	# Returns full system path to the specified path relative to repository
+	# root path.
+	#
+	def full_path(self, path):
+		return os.path.join(self.root_path, path)
+
+
+	def merge(self, src_dir, dest_dir, reintegrate = False):
+		os.chdir(self.full_path(dest_dir))
+
+		args = ["svn", "merge"]
+		if reintegrate:
+			args.append("--reintegrate")
+
+		args.append(self.full_path(src_dir))
+		subprocess.call(args)
+
 
 class SvnFlow:
 	def __init__(self):
 		self.svn = Svn(svn_utils.find_svn_root_path())
+		self.branches_dir = "branches"
+		self.develop_branch = os.path.join(self.branches_dir, "develop")
+		self.features_dir = os.path.join(self.branches_dir, "feature")
 
 
 	def init(self):
@@ -148,6 +207,28 @@ class SvnFlow:
 			or retval
 
 		return retval
+
+
+	def feature_start(self, name):
+		feature_branch = os.path.join(self.features_dir, name)
+		if os.path.exists(self.svn.full_path(feature_branch)):
+			raise Exception("Feature branch '" + feature_branch \
+				+ "' already exists.")
+
+		self.svn.update_all()
+		self.svn.branch(self.develop_branch, feature_branch)
+		self.__commit_and_log("Created feature branch '" + name + "'.");
+		self.svn.update_all()
+
+
+	def feature_finish(self, name):
+		feature_branch = os.path.join(self.features_dir, name)
+		self.__raise_if_dir_invalid(feature_branch)
+
+		self.svn.update_all()
+		self.svn.merge(feature_branch, self.develop_branch)
+		self.__commit_and_log("Merged feature '" + name + "' to develop.")
+		self.svn.update_all()
 
 
 	def __test_branches_subdir(self, branches_dir, subdir):
