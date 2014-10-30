@@ -78,6 +78,7 @@ def on_cmd_feature_help():
 		"develop named branches/feature/<name>.")
 	print ("\tsvn-flow feature finish <name> - merges branches/feature<name> "
 		"back to develop.")
+	print "\tsvn-flow feature list - lists all feature branches."
 
 
 def log(msg):
