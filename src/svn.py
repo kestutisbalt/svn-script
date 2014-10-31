@@ -1,6 +1,8 @@
 import os
 import subprocess
 
+from console_utils import exec_silent
+
 
 #
 # This class wraps svn command line tool.
@@ -16,10 +18,10 @@ class Svn:
 	#
 	def mkdir(self, relative_dir_path):
 		full_path = self.full_path(relative_dir_path)
-		subprocess.call(["svn", "mkdir", full_path])
+		exec_silent(["svn", "mkdir", full_path])
 
 	def commit(self, msg):
-		subprocess.call(["svn", "commit", "-m", msg])
+		exec_silent(["svn", "commit", "-m", msg])
 
 	#
 	# The specified directory paths are relative to svn repository root path.
@@ -27,7 +29,7 @@ class Svn:
 	#	svn.branch("trunk", "branches/develop")
 	#
 	def branch(self, src_dir, target_dir):
-		subprocess.call(["svn", "copy", self.full_path(src_dir), \
+		exec_silent(["svn", "copy", self.full_path(src_dir), \
 			self.full_path(target_dir)])
 
 	#
@@ -35,7 +37,7 @@ class Svn:
 	# all branches.
 	#
 	def update_all(self):
-		subprocess.call(["svn", "update", self.root_path])
+		exec_silent(["svn", "update", self.root_path])
 
 	#
 	# Returns list of directories and files added to svn
@@ -55,11 +57,8 @@ class Svn:
 	# Returns True if the specified path is tracked by svn. False otherwise.
 	#
 	def is_tracked(self, file_path):
-		fnull = open(os.devnull, "w")
-		svn_retval = subprocess.call(["svn", "info", \
-			self.full_path(file_path)], stdout = fnull, \
-			stderr = fnull)
-		return not bool(svn_retval)
+		args = ["svn", "info", self.full_path(file_path)]
+		return not bool(exec_silent(args))
 
 	#
 	# Returns full system path to the specified path relative to repository
@@ -77,11 +76,11 @@ class Svn:
 			args.append("--reintegrate")
 
 		args.append(self.full_path(src_dir))
-		subprocess.call(args)
+		exec_silent(args)
 
 
 	def remove(self, path):
-		subprocess.call(["svn", "remove", self.full_path(path)])
+		exec_silent(["svn", "remove", self.full_path(path)])
 
 
 	def tag(self, src_branch, tag_branch, tag_msg):
