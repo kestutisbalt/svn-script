@@ -9,6 +9,7 @@ from console_utils import exec_silent
 #
 class Svn:
 	def __init__(self, svn_root_path):
+		self.__assert_svn_repo(svn_root_path)
 		self.root_path = svn_root_path
 
 	#
@@ -86,3 +87,10 @@ class Svn:
 	def tag(self, src_branch, tag_branch, tag_msg):
 		self.branch(src_branch, tag_branch)
 		self.commit(tag_msg)
+
+
+	def __assert_svn_repo(self, path):
+		retval = exec_silent(["svn", "info"])
+		if retval != 0:
+			raise Exception("'" + path \
+				+ "' is not valid svn repository.")
