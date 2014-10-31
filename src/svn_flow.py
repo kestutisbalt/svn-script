@@ -30,10 +30,18 @@ def main():
 			retval = svn_flow.test()
 
 		elif cmd == "feature":
-			on_cmd_feature(svn_flow, args[1:])
+			funcs = {"start" : svn_flow.feature_start, \
+				"finish" : svn_flow.feature_finish, \
+				"list" : svn_flow.feature_list,\
+				"help" : on_cmd_feature_help}
+			on_cmd_branch(args[1:], funcs)
 
 		elif cmd == "release":
-			on_cmd_release(svn_flow, args[1:])
+			funcs = {"start" : svn_flow.release_start, \
+				"finish" : svn_flow.release_finish, \
+				"list" : svn_flow.release_list,\
+				"help" : on_cmd_release_help}
+			on_cmd_branch(args[1:], funcs)
 
 		else:
 			retval = 1
@@ -46,7 +54,7 @@ def main():
 	return retval
 
 
-def on_cmd_release(svn_flow, args):
+def on_cmd_branch(args, branch_functions):
 	if len(args) < 1:
 		cmd = "help"
 	else:
@@ -56,25 +64,25 @@ def on_cmd_release(svn_flow, args):
 		if cmd == "start":
 			if len(args) < 2:
 				raise Exception("Release name must be specified.")
-			svn_flow.release_start(args[1])
+			branch_functions["start"](args[1])
 
 		elif cmd == "finish":
 			if len(args) < 2:
 				raise Exception("Release name must be specified.")
-			svn_flow.release_finish(args[1])
+			branch_functions["finish"](args[1])
 
 		elif cmd == "list":
-			svn_flow.release_list()
+			branch_functions["list"]()
 
 		elif cmd == "help":
-			on_cmd_release_help()
+			branch_functions["help"]()
 
 		else:
 			raise Exception("Unknown command: " + cmd)
 
 	except Exception, e:
 		console_utils.print_error(str(e))
-		on_cmd_release_help()
+		branch_functions["help"]()
 
 
 def on_cmd_release_help():
@@ -85,37 +93,6 @@ def on_cmd_release_help():
 		"back to develop.")
 	print "\tsvn-flow release list - lists all release branches."
 	print "\tsvn-flow release help - prints this help message."
-
-
-def on_cmd_feature(svn_flow, args):
-	if len(args) < 1:
-		cmd = "help"
-	else:
-		cmd = args[0]
-
-	try:
-		if cmd == "start":
-			if len(args) < 2:
-				raise Exception("Feature name must be specified.")
-			svn_flow.feature_start(args[1])
-
-		elif cmd == "finish":
-			if len(args) < 2:
-				raise Exception("Feature name must be specified.")
-			svn_flow.feature_finish(args[1])
-
-		elif cmd == "list":
-			svn_flow.feature_list()
-
-		elif cmd == "help":
-			on_cmd_feature_help()
-
-		else:
-			raise Exception("Unknown command: " + cmd)
-
-	except Exception, e:
-		console_utils.print_error(str(e))
-		on_cmd_feature_help()
 
 
 def on_cmd_feature_help():
