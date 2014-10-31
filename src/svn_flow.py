@@ -2,6 +2,8 @@
 
 import os
 from optparse import OptionParser
+from sys import stdin
+from sys import stdout
 
 import svn_utils
 import console_utils
@@ -30,6 +32,9 @@ def main():
 		elif cmd == "feature":
 			on_cmd_feature(svn_flow, args[1:])
 
+		elif cmd == "release":
+			on_cmd_release(svn_flow, args[1:])
+
 		else:
 			retval = 1
 			console_utils.print_error("Unknown command: " + cmd)
@@ -39,6 +44,47 @@ def main():
 			"with svn-flow.")
 
 	return retval
+
+
+def on_cmd_release(svn_flow, args):
+	if len(args) < 1:
+		cmd = "help"
+	else:
+		cmd = args[0]
+
+	try:
+		if cmd == "start":
+			if len(args) < 2:
+				raise Exception("Release name must be specified.")
+			svn_flow.release_start(args[1])
+
+		elif cmd == "finish":
+			if len(args) < 2:
+				raise Exception("Release name must be specified.")
+			svn_flow.release_finish(args[1])
+
+		elif cmd == "list":
+			svn_flow.release_list()
+
+		elif cmd == "help":
+			on_cmd_release_help()
+
+		else:
+			raise Exception("Unknown command: " + cmd)
+
+	except Exception, e:
+		console_utils.print_error(str(e))
+		on_cmd_release_help()
+
+
+def on_cmd_release_help():
+	print "Usage:"
+	print ("\tsvn-flow release start <name> - creates new branch off "
+		"develop named branches/release/<name>.")
+	print ("\tsvn-flow release finish <name> - merges branches/release<name> "
+		"back to develop.")
+	print "\tsvn-flow release list - lists all release branches."
+	print "\tsvn-flow release help - prints this help message."
 
 
 def on_cmd_feature(svn_flow, args):
@@ -98,6 +144,10 @@ class SvnFlow:
 		self.release_dir = os.path.join(self.branches_dir, "release")
 		self.hotfix_dir = os.path.join(self.branches_dir, "hotfix")
 
+		self.branch_dir_by_type = {"feature" : self.feature_dir, \
+			"release" : self.release_dir, \
+			"hotfix" : self.hotfix_dir}
+
 
 	def init(self):
 		self.__create_dir(self.trunk_dir)
@@ -132,15 +182,7 @@ class SvnFlow:
 
 
 	def feature_start(self, name):
-		feature_branch = os.path.join(self.feature_dir, name)
-		if os.path.exists(self.svn.full_path(feature_branch)):
-			raise Exception("Feature branch '" + feature_branch \
-				+ "' already exists.")
-
-		self.svn.update_all()
-		self.svn.branch(self.develop_branch, feature_branch)
-		self.__commit_and_log("Created feature branch '" + name + "'.");
-		self.svn.update_all()
+		self.__branch_start(name, "feature", self.develop_branch)
 
 
 	def feature_finish(self, name):
@@ -148,7 +190,8 @@ class SvnFlow:
 		self.__raise_if_dir_invalid(feature_branch)
 
 		self.svn.update_all()
-		self.svn.merge(feature_branch, self.develop_branch)
+		self.svn.merge(feature_branch, self.develop_branch,
+			reintegrate = True)
 		self.__commit_and_log("Merged feature '" + name + "' to develop.")
 
 		self.svn.remove(feature_branch)
@@ -157,13 +200,70 @@ class SvnFlow:
 
 
 	def feature_list(self):
-		features = self.svn.list(self.feature_dir)
-		if len(features) < 1:
-			print "No feature branches are present."
+		self.__branch_list("feature")
+
+
+	def release_start(self, name):
+		self.__branch_start(name, "release", self.develop_branch)
+
+
+	def release_finish(self, name):
+		release_branch = os.path.join(self.release_dir, name)
+		self.__raise_if_dir_invalid(release_branch)
+
+		self.svn.update_all()
+		self.svn.merge(release_branch, self.trunk_dir)
+		self.__commit_and_log("Merged release '" + name + "' to trunk.")
+
+		self.svn.update_all()
+		tag_branch = os.path.join(self.tags_dir, name)
+		tag_message = self.__get_tag_message()
+		self.svn.tag(self.trunk_dir, tag_branch, tag_message)
+
+		self.svn.update_all()
+		self.svn.merge(release_branch, self.develop_branch,
+			reintegrate = True)
+		self.__commit_and_log("Merged release '" + name + "' to develop.")
+
+		self.svn.remove(release_branch)
+		self.__commit_and_log("Removed release '" + name + "' branch.")
+		self.svn.update_all()
+
+
+	def release_list(self):
+		self.__branch_list("release")
+
+
+	def __branch_list(self, branch_type):
+		branches = self.svn.list(self.branch_dir_by_type[branch_type])
+		if len(branches) < 1:
+			print "No " + branch_type +" branches are present."
 		else:
-			print "Feature branches:"
-			for f in features:
-				print "\t" + f[:-1]
+			print branch_type + " branches:"
+			for b in branches:
+				print "\t" + b[:-1]
+
+
+	def __branch_start(self, name, branch_type, branch_off):
+		branch_dir = self.branch_dir_by_type[branch_type]
+		branch = os.path.join(branch_dir, name)
+		if os.path.exists(self.svn.full_path(branch)):
+			raise Exception(branch_type + " branch '" + branch \
+				+ "' already exists.")
+
+		self.svn.update_all()
+		self.svn.branch(branch_off, branch)
+		self.__commit_and_log("Created " + branch_type + " branch '" \
+			+ name + "'.");
+		self.svn.update_all()
+
+
+	#
+	# Reads tag message from stdin and returns the result.
+	#
+	def __get_tag_message(self):
+		stdout.write("Tag message: ")
+		return stdin.readline()[:-1]
 
 
 	def __test_dir(self, dir_path):
