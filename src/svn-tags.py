@@ -12,6 +12,8 @@
 # NOTE: Otherwise this tool will not work correctly.
 #
 
+# TODO(povilas): add tag message to each tag in the list.
+
 import os
 import subprocess
 from exceptions import Exception
