@@ -82,3 +82,8 @@ class Svn:
 
 	def remove(self, path):
 		subprocess.call(["svn", "remove", self.full_path(path)])
+
+
+	def tag(self, src_branch, tag_branch, tag_msg):
+		self.branch(src_branch, tag_branch)
+		self.commit(tag_msg)
