@@ -51,6 +51,11 @@ def main():
 				"help" : on_cmd_hotfix_help}
 			on_cmd_branch(args[1:], funcs)
 
+		elif cmd == "branches":
+			svn_flow.feature_list()
+			svn_flow.release_list()
+			svn_flow.hotfix_list()
+
 		else:
 			retval = 1
 			console_utils.print_error("Unknown command: " + cmd)
@@ -58,6 +63,8 @@ def main():
 		print "Usage:"
 		print ("\tsvn-flow init - initializes svn repository to work "
 			"with svn-flow.")
+		print ("\tsvn-flow branches - prints feature, release and "
+			"hotfix branches.")
 
 	return retval
 
