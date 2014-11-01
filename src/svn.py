@@ -84,7 +84,7 @@ class Svn:
 
 		src_path = self.svn_path(src_dir)
 		args.append(src_path)
-		if exec_silent(args) != 0:
+		if subprocess.call(args) != 0:
 			raise Exception("Failed to merge '" + src_path \
 				+ "' to '" + dest_path + "'.")
 
