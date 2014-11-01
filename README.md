@@ -22,3 +22,6 @@ TODO
 - [+] Add branch listing script: lists dir in `$repo/branches`.
 - [ ] Colored diff: 'svn diff | vim -'. Could be 'svn-cdiff' command or so.
 - [ ] Bash auto completion.
+- [ ] Build debian package.
+- [ ] Add tests.
+- [ ] Versioning.
