@@ -98,6 +98,15 @@ class Svn:
 		self.commit(tag_msg)
 
 
+	def is_branch_merged_into(self, src_branch, dest_branch):
+		args = ["svn", "mergeinfo", "--show-revs", "eligible", \
+			self.full_path(src_branch), self.full_path(dest_branch)]
+		output = subprocess.check_output(args)
+		lines = output.split("\n")
+		lines.remove("")
+		return len(lines) == 0
+
+
 	def __assert_svn_repo(self, path):
 		retval = exec_silent(["svn", "info"])
 		if retval != 0:
