@@ -1,5 +1,6 @@
 import os
 import subprocess
+from exceptions import Exception
 
 from console_utils import exec_silent
 

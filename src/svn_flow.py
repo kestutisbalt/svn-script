@@ -4,6 +4,7 @@ import os
 from optparse import OptionParser
 from sys import stdin
 from sys import stdout
+from exceptions import Exception
 
 import svn_utils
 import console_utils
