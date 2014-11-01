@@ -74,14 +74,18 @@ class Svn:
 
 
 	def merge(self, src_dir, dest_dir, reintegrate = False):
-		os.chdir(self.full_path(dest_dir))
+		dest_path = self.full_path(dest_dir)
+		os.chdir(dest_path)
 
 		args = ["svn", "merge"]
 		if reintegrate:
 			args.append("--reintegrate")
 
-		args.append(self.svn_path(src_dir))
-		exec_silent(args)
+		src_path = self.svn_path(src_dir)
+		args.append(src_path)
+		if exec_silent(args) != 0:
+			raise Exception("Failed to merge '" + src_path \
+				+ "' to '" + dest_path + "'.")
 
 
 	def remove(self, path):
