@@ -102,10 +102,10 @@ def on_cmd_branch(args, branch_functions):
 
 def on_cmd_release_help():
 	print "Usage:"
-	print ("\tsvn-flow release start <name> - creates new branch off "
-		"develop named branches/release/<name>.")
-	print ("\tsvn-flow release finish <name> - merges branches/release<name> "
-		"back to develop and trunk.")
+	print ("\tsvn-flow release start <version> - creates new branch off "
+		"develop named branches/release/<version>.")
+	print ("\tsvn-flow release finish <version> - merges "
+		"branches/release<version> back to develop and trunk.")
 	print "\tsvn-flow release list - lists all release branches."
 	print "\tsvn-flow release help - prints this help message."
 
@@ -205,30 +205,33 @@ class SvnFlow:
 		self.__branch_list("feature")
 
 
-	def release_start(self, name):
-		self.__branch_start(name, "release", self.develop_branch)
+	def release_start(self, version):
+		self.__branch_start(version, "release", self.develop_branch)
 
 
-	def release_finish(self, name):
-		release_branch = os.path.join(self.release_dir, name)
+	def release_finish(self, version):
+		release_branch = os.path.join(self.release_dir, version)
 		self.__raise_if_dir_invalid(release_branch)
 
 		self.svn.update_all()
 		self.svn.merge(release_branch, self.trunk_dir)
-		self.__commit_and_log("Merged release '" + name + "' to trunk.")
+		self.__commit_and_log("Merged release '" + version \
+			+ "' to trunk.")
 
 		self.svn.update_all()
-		tag_branch = os.path.join(self.tags_dir, name)
+		tag_branch = os.path.join(self.tags_dir, version)
 		tag_message = self.__get_tag_message()
 		self.svn.tag(self.trunk_dir, tag_branch, tag_message)
 
 		self.svn.update_all()
 		self.svn.merge(release_branch, self.develop_branch,
 			reintegrate = True)
-		self.__commit_and_log("Merged release '" + name + "' to develop.")
+		self.__commit_and_log("Merged release '" + version \
+			+ "' to develop.")
 
 		self.svn.remove(release_branch)
-		self.__commit_and_log("Removed release '" + name + "' branch.")
+		self.__commit_and_log("Removed release '" + version \
+			+ "' branch.")
 		self.svn.update_all()
 
 
