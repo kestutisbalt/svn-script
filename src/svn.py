@@ -69,6 +69,10 @@ class Svn:
 		return os.path.join(self.root_path, path)
 
 
+	def svn_path(self, path):
+		return os.path.join("^", path)
+
+
 	def merge(self, src_dir, dest_dir, reintegrate = False):
 		os.chdir(self.full_path(dest_dir))
 
@@ -76,7 +80,7 @@ class Svn:
 		if reintegrate:
 			args.append("--reintegrate")
 
-		args.append(self.full_path(src_dir))
+		args.append(self.svn_path(src_dir))
 		exec_silent(args)
 
 
