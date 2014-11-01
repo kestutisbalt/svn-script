@@ -44,6 +44,13 @@ def main():
 				"help" : on_cmd_release_help}
 			on_cmd_branch(args[1:], funcs)
 
+		elif cmd == "hotfix":
+			funcs = {"start" : svn_flow.hotfix_start, \
+				"finish" : svn_flow.hotfix_finish, \
+				"list" : svn_flow.hotfix_list,\
+				"help" : on_cmd_hotfix_help}
+			on_cmd_branch(args[1:], funcs)
+
 		else:
 			retval = 1
 			console_utils.print_error("Unknown command: " + cmd)
@@ -91,7 +98,7 @@ def on_cmd_release_help():
 	print ("\tsvn-flow release start <name> - creates new branch off "
 		"develop named branches/release/<name>.")
 	print ("\tsvn-flow release finish <name> - merges branches/release<name> "
-		"back to develop.")
+		"back to develop and trunk.")
 	print "\tsvn-flow release list - lists all release branches."
 	print "\tsvn-flow release help - prints this help message."
 
@@ -100,10 +107,20 @@ def on_cmd_feature_help():
 	print "Usage:"
 	print ("\tsvn-flow feature start <name> - creates new branch off "
 		"develop named branches/feature/<name>.")
-	print ("\tsvn-flow feature finish <name> - merges branches/feature<name> "
+	print ("\tsvn-flow feature finish <name> - merges branches/feature/<name> "
 		"back to develop.")
 	print "\tsvn-flow feature list - lists all feature branches."
 	print "\tsvn-flow feature help - prints this help message."
+
+
+def on_cmd_hotfix_help():
+	print "Usage:"
+	print ("\tsvn-flow hotfix start <version> - creates new branch off "
+		"trunk named branches/hotfix/<version>.")
+	print ("\tsvn-flow hotfix finish <version> - merges "
+		"branches/hotfix/<version> back to develop.")
+	print "\tsvn-flow hotfix list - lists all hotfix branches."
+	print "\tsvn-flow hotfix help - prints this help message."
 
 
 def log(msg):
@@ -212,10 +229,42 @@ class SvnFlow:
 		self.__branch_list("release")
 
 
+	def hotfix_start(self, version):
+		self.__branch_start(version, "hotfix", self.trunk_dir)
+
+
+	def hotfix_finish(self, version):
+		hotfix_branch = os.path.join(self.hotfix_dir, version)
+		self.__raise_if_dir_invalid(hotfix_branch)
+
+		self.svn.update_all()
+		self.svn.merge(hotfix_branch, self.develop_branch)
+		self.__commit_and_log("Merged hotfix '" + version \
+			+ "' to develop.")
+
+		self.svn.update_all()
+		self.svn.merge(hotfix_branch, self.trunk_dir,
+			reintegrate = True)
+		self.__commit_and_log("Merged hotfix '" + version + "' to trunk.")
+
+		self.svn.update_all()
+		tag_branch = os.path.join(self.tags_dir, version)
+		tag_message = self.__get_tag_message()
+		self.svn.tag(self.trunk_dir, tag_branch, tag_message)
+
+		self.svn.remove(hotfix_branch)
+		self.__commit_and_log("Removed hotfix '" + version + "' branch.")
+		self.svn.update_all()
+
+
+	def hotfix_list(self):
+		self.__branch_list("hotfix")
+
+
 	def __branch_list(self, branch_type):
 		branches = self.svn.list(self.branch_dir_by_type[branch_type])
 		if len(branches) < 1:
-			print "No " + branch_type +" branches are present."
+			print "No " + branch_type + " branches are present."
 		else:
 			print branch_type + " branches:"
 			for b in branches:
