@@ -1,0 +1,21 @@
+Section: utils
+Priority: optional
+Homepage: https://github.com/kestutisbalt/svn-script
+Standards-Version: 3.9.2
+
+Package: svn-utils
+Version: 0.1.0
+Maintainer: Povilas Balciunas <balciunas90@gmail.com>
+Depends: python
+Architecture: all
+Readme: README.debian
+Files: svn_clean.sh /usr/local/lib/svn-utils
+ svn_flow.py /usr/local/lib/svn-utils
+ svn_tags.py /usr/local/lib/svn-utils
+ console_utils.py /usr/local/lib/svn-utils
+ svn.py /usr/local/lib/svn-utils
+ svn_utils.py /usr/local/lib/svn-utils
+Description: Command line tools to help working with svn.
+ This package provides various CLI tools to easen the interaction with svn:
+ creating feature, release, hotfix branches, creating, listing tags,
+ cleaning unstaged files, etc.
