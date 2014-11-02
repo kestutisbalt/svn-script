@@ -33,12 +33,23 @@ def main():
 
 	return retval
 
+
 def print_usage():
 	print "Usage:"
 	print ("\tsvn-flow init - initializes svn repository to work "
 		"with svn-flow.")
+	print ("\tsvn-flow test - tests whether current directory is valid "
+		"svn-flow project directory.")
 	print ("\tsvn-flow branches - prints feature, release and "
 		"hotfix branches.")
+
+	print ""
+	on_cmd_feature_help(supplements = True)
+	print ""
+	on_cmd_release_help(supplements = True)
+	print ""
+	on_cmd_hotfix_help(supplements = True)
+
 
 def process_commands(args, svn_flow):
 	cmd = args[0]
@@ -110,8 +121,9 @@ def on_cmd_branch(args, branch_functions):
 		branch_functions["help"]()
 
 
-def on_cmd_release_help():
-	print "Usage:"
+def on_cmd_release_help(supplements = False):
+	if not supplements:
+		print "Usage:"
 	print ("\tsvn-flow release start <version> - creates new branch off "
 		"develop named branches/release/<version>.")
 	print ("\tsvn-flow release finish <version> - merges "
@@ -120,8 +132,9 @@ def on_cmd_release_help():
 	print "\tsvn-flow release help - prints this help message."
 
 
-def on_cmd_feature_help():
-	print "Usage:"
+def on_cmd_feature_help(supplements = False):
+	if not supplements:
+		print "Usage:"
 	print ("\tsvn-flow feature start <name> - creates new branch off "
 		"develop named branches/feature/<name>.")
 	print ("\tsvn-flow feature finish <name> - merges branches/feature/<name> "
@@ -130,8 +143,9 @@ def on_cmd_feature_help():
 	print "\tsvn-flow feature help - prints this help message."
 
 
-def on_cmd_hotfix_help():
-	print "Usage:"
+def on_cmd_hotfix_help(supplements = False):
+	if not supplements:
+		print "Usage:"
 	print ("\tsvn-flow hotfix start <version> - creates new branch off "
 		"trunk named branches/hotfix/<version>.")
 	print ("\tsvn-flow hotfix finish <version> - merges "
