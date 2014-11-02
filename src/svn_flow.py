@@ -21,52 +21,62 @@ def main():
 	(options, args) = opt_parser.parse_args();
 
 	if len(args) > 0:
-		svn_flow = SvnFlow()
+		try:
+			svn_flow = SvnFlow()
+			process_commands(args, svn_flow)
+		except Exception, e:
+			console_utils.print_error(str(e))
+			print_usage()
 
-		cmd = args[0]
-		if cmd == "init":
-			svn_flow.init()
-
-		elif cmd == "test":
-			retval = svn_flow.test()
-
-		elif cmd == "feature":
-			funcs = {"start" : svn_flow.feature_start, \
-				"finish" : svn_flow.feature_finish, \
-				"list" : svn_flow.feature_list,\
-				"help" : on_cmd_feature_help}
-			on_cmd_branch(args[1:], funcs)
-
-		elif cmd == "release":
-			funcs = {"start" : svn_flow.release_start, \
-				"finish" : svn_flow.release_finish, \
-				"list" : svn_flow.release_list,\
-				"help" : on_cmd_release_help}
-			on_cmd_branch(args[1:], funcs)
-
-		elif cmd == "hotfix":
-			funcs = {"start" : svn_flow.hotfix_start, \
-				"finish" : svn_flow.hotfix_finish, \
-				"list" : svn_flow.hotfix_list,\
-				"help" : on_cmd_hotfix_help}
-			on_cmd_branch(args[1:], funcs)
-
-		elif cmd == "branches":
-			svn_flow.feature_list()
-			svn_flow.release_list()
-			svn_flow.hotfix_list()
-
-		else:
-			retval = 1
-			console_utils.print_error("Unknown command: " + cmd)
 	else:
-		print "Usage:"
-		print ("\tsvn-flow init - initializes svn repository to work "
-			"with svn-flow.")
-		print ("\tsvn-flow branches - prints feature, release and "
-			"hotfix branches.")
+		print_usage()
 
 	return retval
+
+def print_usage():
+	print "Usage:"
+	print ("\tsvn-flow init - initializes svn repository to work "
+		"with svn-flow.")
+	print ("\tsvn-flow branches - prints feature, release and "
+		"hotfix branches.")
+
+def process_commands(args, svn_flow):
+	cmd = args[0]
+	if cmd == "init":
+		svn_flow.init()
+
+	elif cmd == "test":
+		retval = svn_flow.test()
+
+	elif cmd == "feature":
+		funcs = {"start" : svn_flow.feature_start, \
+			"finish" : svn_flow.feature_finish, \
+			"list" : svn_flow.feature_list,\
+			"help" : on_cmd_feature_help}
+		on_cmd_branch(args[1:], funcs)
+
+	elif cmd == "release":
+		funcs = {"start" : svn_flow.release_start, \
+			"finish" : svn_flow.release_finish, \
+			"list" : svn_flow.release_list,\
+			"help" : on_cmd_release_help}
+		on_cmd_branch(args[1:], funcs)
+
+	elif cmd == "hotfix":
+		funcs = {"start" : svn_flow.hotfix_start, \
+			"finish" : svn_flow.hotfix_finish, \
+			"list" : svn_flow.hotfix_list,\
+			"help" : on_cmd_hotfix_help}
+		on_cmd_branch(args[1:], funcs)
+
+	elif cmd == "branches":
+		svn_flow.feature_list()
+		svn_flow.release_list()
+		svn_flow.hotfix_list()
+
+	else:
+		retval = 1
+		console_utils.print_error("Unknown command: " + cmd)
 
 
 def on_cmd_branch(args, branch_functions):
