@@ -13,6 +13,8 @@ all:
 install:
 	sudo mkdir -p $(INSTALL_LIB_DIR)
 	sudo cp $(SRC_DIR)/*.py $(INSTALL_LIB_DIR)/
+	sudo cp $(SRC_DIR)/*.sh $(INSTALL_LIB_DIR)/
 	sudo ln -sf $(INSTALL_LIB_DIR)/svn_flow.py $(INSTALL_BIN_DIR)/svn-flow
 	sudo ln -sf $(INSTALL_LIB_DIR)/svn_tags.py $(INSTALL_BIN_DIR)/svn-tags
+	sudo ln -sf $(INSTALL_LIB_DIR)/svn_clean.sh $(INSTALL_BIN_DIR)/svn-clean
 .PHONY: install
