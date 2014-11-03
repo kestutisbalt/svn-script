@@ -1,0 +1,3 @@
+svn-utils is a set command line tools to help working with svn. It contains
+scripts to work with gitflow like branching model in svn, list tags, branches,
+clean unstaged files, etc.
