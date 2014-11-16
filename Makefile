@@ -1,15 +1,17 @@
 SRC_DIR = $(CURDIR)/src
 
-INSTALL_LIB_DIR = /usr/local/lib/svn-utils
+install_lIB_DIR = /usr/local/lib/svn-utils
 INSTALL_BIN_DIR = /usr/local/bin
 
 BUILD_DIR ?= $(CURDIR)/build
-DEB_OUT_DIR = $(BUILD_DIR)/deb
+DEB_OUT_DIR = $(BUILD_DIR)/svn-utils-0.1.1
 
 
 all:
 	@echo "Usage:"
 	@echo "\tmake install - installs scripts to the system."
+	@echo "\tmake deb - creates debian package."
+	@echo "\tmake clean - removes build directory."
 .PHONY: all
 
 
@@ -24,14 +26,14 @@ install:
 
 
 deb:
-	mkdir -p $(DEB_OUT_DIR)
-	ln -sf $(CURDIR)/deb/README.debian $(DEB_OUT_DIR)/README.debian
-	ln -sf $(SRC_DIR)/*.py $(DEB_OUT_DIR)/
-	ln -sf $(SRC_DIR)/*.sh $(DEB_OUT_DIR)/
+	mkdir -p $(DEB_OUT_DIR)/debian
+	cp -Rf $(CURDIR)/deb/* $(DEB_OUT_DIR)/debian/
+	cp $(SRC_DIR)/*.py $(DEB_OUT_DIR)/
+	cp $(SRC_DIR)/*.sh $(DEB_OUT_DIR)/
 	ln -sf $(INSTALL_LIB_DIR)/svn_flow.py $(DEB_OUT_DIR)/svn-flow
 	ln -sf $(INSTALL_LIB_DIR)/svn_tags.py $(DEB_OUT_DIR)/svn-tags
 	ln -sf $(INSTALL_LIB_DIR)/svn_clean.sh $(DEB_OUT_DIR)/svn-clean
-	cd $(DEB_OUT_DIR) ; equivs-build --full $(CURDIR)/deb/svn-utils
+	cd $(DEB_OUT_DIR) ; dpkg-buildpackage -rfakeroot -uc -us
 .PHONY: deb
 
 
