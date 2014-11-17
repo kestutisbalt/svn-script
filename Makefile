@@ -1,7 +1,10 @@
 SRC_DIR = $(CURDIR)/src
 
-install_lIB_DIR = /usr/local/lib/svn-utils
-INSTALL_BIN_DIR = /usr/local/bin
+
+INSTALL_LIB_DIR = usr/lib/svn-utils
+INSTALL_LIB_PATH = /$(INSTALL_LIB_DIR)
+INSTALL_BIN_DIR = usr/bin
+INSTALL_BIN_PATH = /$(INSTALL_BIN_DIR)
 
 BUILD_DIR ?= $(CURDIR)/build
 DEB_OUT_DIR = $(BUILD_DIR)/svn-utils-0.1.1
@@ -16,23 +19,25 @@ all:
 
 
 install:
-	sudo mkdir -p $(INSTALL_LIB_DIR)
-	sudo cp $(SRC_DIR)/*.py $(INSTALL_LIB_DIR)/
-	sudo cp $(SRC_DIR)/*.sh $(INSTALL_LIB_DIR)/
-	sudo ln -sf $(INSTALL_LIB_DIR)/svn_flow.py $(INSTALL_BIN_DIR)/svn-flow
-	sudo ln -sf $(INSTALL_LIB_DIR)/svn_tags.py $(INSTALL_BIN_DIR)/svn-tags
-	sudo ln -sf $(INSTALL_LIB_DIR)/svn_clean.sh $(INSTALL_BIN_DIR)/svn-clean
+	sudo mkdir -p $(INSTALL_LIB_PATH)
+	sudo cp $(SRC_DIR)/*.py $(INSTALL_LIB_PATH)/
+	sudo cp $(SRC_DIR)/*.sh $(INSTALL_LIB_PATH)/
+	sudo ln -sf $(INSTALL_LIB_PATH)/svn_flow.py $(INSTALL_BIN_PATH)/svn-flow
+	sudo ln -sf $(INSTALL_LIB_PATH)/svn_tags.py $(INSTALL_BIN_PATH)/svn-tags
+	sudo ln -sf $(INSTALL_LIB_PATH)/svn_clean.sh $(INSTALL_BIN_PATH)/svn-clean
 .PHONY: install
 
 
 deb:
 	mkdir -p $(DEB_OUT_DIR)/debian
 	cp -Rf $(CURDIR)/deb/* $(DEB_OUT_DIR)/debian/
-	cp $(SRC_DIR)/*.py $(DEB_OUT_DIR)/
-	cp $(SRC_DIR)/*.sh $(DEB_OUT_DIR)/
-	ln -sf $(INSTALL_LIB_DIR)/svn_flow.py $(DEB_OUT_DIR)/svn-flow
-	ln -sf $(INSTALL_LIB_DIR)/svn_tags.py $(DEB_OUT_DIR)/svn-tags
-	ln -sf $(INSTALL_LIB_DIR)/svn_clean.sh $(DEB_OUT_DIR)/svn-clean
+	mkdir -p $(DEB_OUT_DIR)/$(INSTALL_LIB_DIR)
+	mkdir -p $(DEB_OUT_DIR)/$(INSTALL_BIN_DIR)
+	cp $(SRC_DIR)/*.py $(DEB_OUT_DIR)/$(INSTALL_LIB_DIR)/
+	cp $(SRC_DIR)/*.sh $(DEB_OUT_DIR)/$(INSTALL_LIB_DIR)/
+	ln -sf $(INSTALL_LIB_PATH)/svn_flow.py $(DEB_OUT_DIR)/$(INSTALL_BIN_DIR)/svn-flow
+	ln -sf $(INSTALL_LIB_PATH)/svn_tags.py $(DEB_OUT_DIR)/$(INSTALL_BIN_DIR)/svn-tags
+	ln -sf $(INSTALL_LIB_PATH)/svn_clean.sh $(DEB_OUT_DIR)/$(INSTALL_BIN_DIR)/svn-clean
 	cd $(DEB_OUT_DIR) ; dpkg-buildpackage -rfakeroot -uc -us
 .PHONY: deb
 
