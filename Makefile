@@ -7,7 +7,8 @@ INSTALL_BIN_DIR = usr/bin
 INSTALL_BIN_PATH = /$(INSTALL_BIN_DIR)
 
 BUILD_DIR ?= $(CURDIR)/build
-DEB_OUT_DIR = $(BUILD_DIR)/svn-utils-0.1.1
+VERSION := $(shell git describe --abbrev=0 HEAD --tags)
+DEB_OUT_DIR = $(BUILD_DIR)/svn-utils-$(VERSION)
 
 
 all:
