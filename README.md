@@ -27,9 +27,9 @@ Install script simply copies the neccessary files to appropriate locations:
 
 #### With Debian package
 
-To build Debian package you need equivs-build program. It's in equivs package:
+Firstly install build dependencies:
 
-	$ sudo apt-get install equivs
+	$ sudo apt-get install dpkg-dev dh-make
 
 Then simply run
 
