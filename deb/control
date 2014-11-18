@@ -1,0 +1,15 @@
+Source: svn-utils
+Section: utils
+Priority: optional
+Maintainer: Povilas Balciunas <balciunas90@gmail.com>
+Build-Depends: debhelper
+Standards-Version: 3.9.3
+Homepage: https://github.com/kestutisbalt/svn-script
+
+Package: svn-utils
+Architecture: any
+Depends: python, subversion
+Description: Command line tools to help working with svn.
+ This package provides various CLI tools to easen the interaction with svn:
+ creating feature, release, hotfix branches, creating, listing tags,
+ cleaning unstaged files, etc.
