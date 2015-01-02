@@ -18,7 +18,7 @@ def main():
 	retval = 0
 
 	opt_parser = OptionParser()
-	(options, args) = opt_parser.parse_args();
+	(options, args) = opt_parser.parse_args()
 
 	if len(args) > 0:
 		try:
@@ -315,7 +315,7 @@ class SvnFlow:
 		self.svn.update_all()
 		self.svn.branch(branch_off, branch)
 		self.__commit_and_log("Created " + branch_type + " branch '" \
-			+ name + "'.");
+			+ name + "'.")
 		self.svn.update_all()
 
 
